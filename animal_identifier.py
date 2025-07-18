@@ -4,214 +4,158 @@ from tkinter import filedialog, ttk, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import numpy as np
 import os
+import sys # 引入 sys 函式庫來處理路徑
 import cv2
 import threading
+import json
 import wikipediaapi
 
-# --- 延遲引入 TensorFlow，避免啟動時卡頓 ---
-# We'll import TensorFlow inside a thread to keep the UI responsive.
+# --- 延遲引入 TensorFlow ---
 tf = None
 
-# --- 輔助函數：為圖片加上圓角 ---
-# Helper function to add rounded corners to a PIL Image object.
+# --- 關鍵輔助函數：獲取資源的正確路徑 ---
+# This function is the "map" for our packaged app.
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+# --- 輔助函數 (與之前相同) ---
 def round_corners(pil_image, radius):
-    mask = Image.new('L', pil_image.size, 0)
-    draw = ImageDraw.Draw(mask)
+    mask = Image.new('L', pil_image.size, 0); draw = ImageDraw.Draw(mask)
     draw.rounded_rectangle((0, 0) + pil_image.size, radius, fill=255)
-    output = pil_image.copy()
-    output.putalpha(mask)
+    output = pil_image.copy(); output.putalpha(mask)
     return output
 
-# --- 圖片預處理函數 ---
-# Preprocesses the image to the format required by the MobileNetV2 model.
 def preprocess_pil_image(pil_img):
-    img_resized = pil_img.resize((224, 224))
-    img_array = np.array(img_resized)
-    # Remove alpha channel if it exists (e.g., in PNGs)
-    if img_array.shape[2] == 4:
-        img_array = img_array[:, :, :3]
-    # Expand dimensions to create a batch of 1
+    img_resized = pil_img.resize((224, 224)); img_array = np.array(img_resized)
+    if img_array.shape[2] == 4: img_array = img_array[:, :, :3]
     img_array_expanded = np.expand_dims(img_array, axis=0)
     return tf.keras.applications.mobilenet_v2.preprocess_input(img_array_expanded)
 
 # --- 主應用程式 Class ---
-# This class encapsulates the entire application.
 class AnimalIdentifierApp:
     def __init__(self, root):
+        # ... (所有 __init__ 內容與之前相同，直到 load_translations) ...
         self.root = root
-        self.root.geometry("550x750") # 增加高度以容納搜尋框
-        self.model = None # 模型初始為 None
+        self.root.geometry("550x750")
+        self.model = None
+        self.translations = {}
 
-        # --- 主題與顏色管理 (Theme and Color Management) ---
+        # --- 載入所有翻譯檔案 ---
+        self.load_translations()
+
         self.theme_mode = tk.StringVar(value='light')
         self.themes = {
             'light': { 'BG': "#f0f0f0", 'TEXT': "#000000", 'ACCENT': "#007aff", 'FRAME_BG': "#ffffff", 'FRAME_BORDER': "#dcdcdc", 'BUTTON_TEXT': "#ffffff", 'SECONDARY_BG': "#e5e5ea" },
             'dark': { 'BG': "#1e1e1e", 'TEXT': "#e0e0e0", 'ACCENT': "#0a84ff", 'FRAME_BG': "#2c2c2e", 'FRAME_BORDER': "#404040", 'BUTTON_TEXT': "#ffffff", 'SECONDARY_BG': "#3a3a3c" }
         }
-
-        # --- 多語言翻譯字典 (Multi-language Dictionary) ---
-        self.translations = {
-            'zh-tw': {
-                'window_title': "動物識別器", 'main_title': "圖片或影片分析", 'result_placeholder': "辨識結果將會顯示在這裡",
-                'select_button': "選擇檔案", 'result_title': "AI 分析結果 (點擊可搜尋):", 'prediction_prefix': "可能是:",
-                'confidence': "信心度", 'error_message': "發生錯誤：", 'file_dialog_title': "選擇一個檔案",
-                'file_types_images': "圖片檔案", 'file_types_videos': "影片檔案", 'file_types_all': "所有支援的檔案",
-                'loading_model': "模型載入中，請稍候...", 'search_button': "搜尋維基百科", 'wiki_search_title': "維基百科搜尋結果",
-                'page_not_found': "找不到相關的維基百科頁面。", 'searching': "搜尋中..."
-            },
-            'en': {
-                'window_title': "Animal Identifier", 'main_title': "Image or Video Analysis", 'result_placeholder': "Prediction will be shown here",
-                'select_button': "Select File", 'result_title': "AI Analysis (Click to search):", 'prediction_prefix': "Might be:",
-                'confidence': "Confidence", 'error_message': "An error occurred:", 'file_dialog_title': "Select a file",
-                'file_types_images': "Image Files", 'file_types_videos': "Video Files", 'file_types_all': "All Supported Files",
-                'loading_model': "Loading model, please wait...", 'search_button': "Search Wikipedia", 'wiki_search_title': "Wikipedia Search Result",
-                'page_not_found': "Could not find a matching Wikipedia page.", 'searching': "Searching..."
-            }
+        self.current_lang = tk.StringVar(value='zh-tw' if 'zh-tw' in self.translations else 'en')
+        self.font_map = {
+            'ja': 'Meiryo UI', 'ko': 'Malgun Gothic', 'zh-cn': 'Microsoft YaHei UI',
+            'zh-tw': 'Microsoft JhengHei UI', 'default': 'Segoe UI'
         }
-        self.current_lang = tk.StringVar(value='zh-tw')
-
-        # --- 字體管理 (Font Management) ---
-        self.FONT_TITLE = ("Segoe UI", 22, "bold")
-        self.FONT_BODY_CH = ("微軟正黑體", 12)
-        self.FONT_BUTTON_CH = ("微軟正黑體", 12, "bold")
-        self.FONT_PREDICTION = ("Segoe UI", 11)
-
-        # --- 介面佈局 (UI Layout) ---
-        self.main_frame = tk.Frame(root)
-        self.main_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
-        
-        # 頂部控制列 (Top control bar)
-        self.top_frame = tk.Frame(self.main_frame)
-        self.top_frame.pack(fill=tk.X, pady=(0, 20))
-        self.lang_combo = ttk.Combobox(self.top_frame, textvariable=self.current_lang, values=['zh-tw', 'en'], state='readonly', width=8)
-        self.lang_combo.pack(side=tk.RIGHT, padx=(10, 0))
-        self.lang_combo.bind("<<ComboboxSelected>>", self.change_language)
+        self.main_frame = tk.Frame(root); self.main_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
+        self.top_frame = tk.Frame(self.main_frame); self.top_frame.pack(fill=tk.X, pady=(0, 20))
+        lang_options = sorted(list(self.translations.keys()))
+        self.lang_combo = ttk.Combobox(self.top_frame, textvariable=self.current_lang, values=lang_options, state='readonly', width=8)
+        self.lang_combo.pack(side=tk.RIGHT, padx=(10, 0)); self.lang_combo.bind("<<ComboboxSelected>>", self.change_language)
         self.theme_switch = ttk.Checkbutton(self.top_frame, text="🌙", style="Switch.TCheckbutton", command=self.toggle_theme)
         self.theme_switch.pack(side=tk.RIGHT)
-        
-        # 標題 (Title)
-        self.title_label = tk.Label(self.main_frame, font=self.FONT_TITLE)
-        self.title_label.pack(pady=(0, 25), anchor='w')
-        
-        # 圖片顯示區 (Image display area)
-        self.image_canvas = tk.Canvas(self.main_frame, width=450, height=350, highlightthickness=0)
-        self.image_canvas.pack(pady=10)
-
-        # 結果顯示區 (Results display area)
-        self.result_title_label = tk.Label(self.main_frame, font=self.FONT_BODY_CH)
-        self.result_title_label.pack(pady=(15, 5), anchor='w')
-        self.results_frame = tk.Frame(self.main_frame)
-        self.results_frame.pack(fill=tk.X)
-
-        # 搜尋功能區 (Search area)
-        self.search_frame = tk.Frame(self.main_frame)
-        self.search_frame.pack(fill=tk.X, pady=(20, 10))
-        self.search_entry = tk.Entry(self.search_frame, font=self.FONT_BODY_CH)
-        self.search_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, ipady=5)
-        self.search_button = tk.Button(self.search_frame, font=self.FONT_BUTTON_CH, relief='flat', borderwidth=0, command=self.manual_search)
-        self.search_button.pack(side=tk.RIGHT, padx=(10, 0), ipady=5)
-
-        # 上傳按鈕 (Upload button)
-        self.upload_button = tk.Button(self.main_frame, font=self.FONT_BUTTON_CH, relief='flat', borderwidth=0, command=self.upload_and_predict, state=tk.DISABLED)
-        self.upload_button.pack(pady=(10, 0), ipady=10, fill=tk.X)
-
-        # --- 初始化 (Initialization) ---
-        self.apply_theme()
-        self.update_ui_text()
+        self.title_label = tk.Label(self.main_frame); self.title_label.pack(pady=(0, 25), anchor='w')
+        self.image_canvas = tk.Canvas(self.main_frame, width=450, height=350, highlightthickness=0); self.image_canvas.pack(pady=10)
+        self.result_title_label = tk.Label(self.main_frame); self.result_title_label.pack(pady=(15, 5), anchor='w')
+        self.results_frame = tk.Frame(self.main_frame); self.results_frame.pack(fill=tk.X)
+        self.search_frame = tk.Frame(self.main_frame); self.search_frame.pack(fill=tk.X, pady=(20, 10))
+        self.search_entry = tk.Entry(self.search_frame); self.search_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, ipady=5)
+        self.search_button = tk.Button(self.search_frame, relief='flat', borderwidth=0, command=self.manual_search); self.search_button.pack(side=tk.RIGHT, padx=(10, 0), ipady=5)
+        self.upload_button = tk.Button(self.main_frame, relief='flat', borderwidth=0, command=self.upload_and_predict, state=tk.DISABLED); self.upload_button.pack(pady=(10, 0), ipady=10, fill=tk.X)
+        self.apply_theme(); self.update_ui_text()
         threading.Thread(target=self.load_model_thread, daemon=True).start()
 
+    def get_font(self, font_type='body'):
+        lang = self.current_lang.get()
+        base_font = self.font_map.get(lang, self.font_map['default'])
+        if font_type == 'title': return (base_font, 22, "bold")
+        if font_type == 'button': return (base_font, 12, "bold")
+        if font_type == 'prediction': return (base_font, 11)
+        return (base_font, 12)
+
+    def load_translations(self):
+        """從 locales 資料夾載入所有 .json 翻譯檔案"""
+        # *** 主要改動：使用 resource_path 來找到資料夾 ***
+        locales_dir = resource_path('locales')
+        if not os.path.isdir(locales_dir):
+            messagebox.showerror("Fatal Error", f"Could not find the 'locales' directory.\nThe application cannot start.")
+            self.root.destroy()
+            return
+        for filename in os.listdir(locales_dir):
+            if filename.endswith('.json'):
+                lang_code = filename.split('.')[0]
+                try:
+                    with open(os.path.join(locales_dir, filename), 'r', encoding='utf-8') as f:
+                        self.translations[lang_code] = json.load(f)
+                except Exception as e:
+                    print(f"Error loading {filename}: {e}")
+
+    # ... (其他所有函式都與之前版本完全相同，無需修改) ...
     def load_model_thread(self):
-        """在背景執行緒中載入模型，避免 UI 卡頓"""
         global tf; import tensorflow; tf = tensorflow
         try:
             self.model = tf.keras.applications.MobileNetV2(weights="imagenet")
             self.root.after(0, self.on_model_loaded)
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Model Error", f"Failed to load model: {e}"))
-    
     def on_model_loaded(self):
-        """模型載入完成後，在主執行緒中更新 UI"""
         self.upload_button.config(state=tk.NORMAL)
         self.update_ui_text()
-
     def create_clickable_predictions(self, predictions_data):
-        """建立可點擊的預測結果按鈕"""
-        for widget in self.results_frame.winfo_children():
-            widget.destroy()
-
-        lang = self.current_lang.get()
-        trans = self.translations[lang]
-        self.result_title_label.config(text=trans['result_title'])
-
+        for widget in self.results_frame.winfo_children(): widget.destroy()
+        lang = self.current_lang.get(); trans = self.translations.get(lang, {})
+        self.result_title_label.config(text=trans.get('result_title', 'AI Results:'))
         for _, label, score in predictions_data:
             label_name = label.replace('_', ' ').capitalize()
             display_text = f"{label_name} ({score:.1%})"
-            btn = tk.Button(self.results_frame, text=display_text, font=self.FONT_PREDICTION, relief='flat', 
-                            command=lambda l=label_name: self.search_wikipedia(l))
+            btn = tk.Button(self.results_frame, text=display_text, relief='flat', command=lambda l=label_name: self.search_wikipedia(l))
             btn.pack(fill=tk.X, pady=2)
-        
         self.apply_theme()
-
     def manual_search(self):
-        """手動觸發搜尋"""
         query = self.search_entry.get()
-        if query:
-            self.search_wikipedia(query)
-
+        if query: self.search_wikipedia(query)
     def search_wikipedia(self, query):
-        """執行維基百科搜尋 (在背景執行緒)"""
-        self.search_entry.delete(0, tk.END)
-        self.search_entry.insert(0, query)
-        
-        lang = self.current_lang.get(); trans = self.translations[lang]
-        self.show_popup(trans['wiki_search_title'], trans['searching'])
+        self.search_entry.delete(0, tk.END); self.search_entry.insert(0, query)
+        lang = self.current_lang.get(); trans = self.translations.get(lang, {})
+        self.show_popup(trans.get('wiki_search_title', 'Search'), trans.get('searching', 'Searching...'))
         threading.Thread(target=self.fetch_wiki_summary, args=(query,), daemon=True).start()
-
     def fetch_wiki_summary(self, query):
-        """獲取維基百科摘要"""
         lang_code = self.current_lang.get().split('-')[0]
-        wiki_api = wikipediaapi.Wikipedia(
-            user_agent='FaunaLens/1.0.2 (A student project)',
-            language=lang_code,
-            extract_format=wikipediaapi.ExtractFormat.WIKI
-        )
+        wiki_api = wikipediaapi.Wikipedia(user_agent='FaunaLens/1.2.0', language=lang_code, extract_format=wikipediaapi.ExtractFormat.WIKI)
         page = wiki_api.page(query)
-        
-        lang = self.current_lang.get(); trans = self.translations[lang]
-        
-        if page.exists():
-            self.root.after(0, self.show_popup, page.title, page.summary)
-        else:
-            self.root.after(0, self.show_popup, trans['wiki_search_title'], trans['page_not_found'])
-
+        lang = self.current_lang.get(); trans = self.translations.get(lang, {})
+        if page.exists(): self.root.after(0, self.show_popup, page.title, page.summary)
+        else: self.root.after(0, self.show_popup, trans.get('wiki_search_title', 'Search'), trans.get('page_not_found', 'Page not found.'))
     def show_popup(self, title, content):
-        """顯示搜尋結果的彈出視窗"""
         if not hasattr(self, 'popup') or not self.popup.winfo_exists():
             self.popup = tk.Toplevel(self.root)
-            self.popup_text = tk.Text(self.popup, wrap=tk.WORD, padx=15, pady=15, font=self.FONT_BODY_CH)
+            self.popup_text = tk.Text(self.popup, wrap=tk.WORD, padx=15, pady=15)
             self.popup_text.pack(expand=True, fill=tk.BOTH)
-        
         self.popup.title(title)
-        self.popup_text.config(state=tk.NORMAL)
-        self.popup_text.delete(1.0, tk.END)
-        self.popup_text.insert(tk.END, content)
+        self.popup_text.config(state=tk.NORMAL, font=self.get_font())
+        self.popup_text.delete(1.0, tk.END); self.popup_text.insert(tk.END, content)
         self.popup_text.config(state=tk.DISABLED)
-        
         mode = self.theme_mode.get(); colors = self.themes[mode]
-        self.popup.configure(bg=colors['BG'])
-        self.popup_text.configure(bg=colors['FRAME_BG'], fg=colors['TEXT'])
-        
+        self.popup.configure(bg=colors['BG']); self.popup_text.configure(bg=colors['FRAME_BG'], fg=colors['TEXT'])
         self.popup.deiconify(); self.popup.lift()
-
     def upload_and_predict(self):
-        """處理檔案上傳、預測和結果顯示"""
-        lang = self.current_lang.get(); trans = self.translations[lang]
-        image_formats = ('*.jpg', '*.jpeg', '*.png', '*.bmp', '*.gif', '*.webp')
-        video_formats = ('*.mp4', '*.avi', '*.mov', '*.mkv')
-        filetypes = [(trans['file_types_images'], ' '.join(image_formats)), (trans['file_types_videos'], ' '.join(video_formats)), (trans['file_types_all'], ' '.join(image_formats) + ' ' + ' '.join(video_formats))]
-        file_path = filedialog.askopenfilename(title=trans['file_dialog_title'], filetypes=filetypes)
+        lang = self.current_lang.get(); trans = self.translations.get(lang, {})
+        filetypes = [(trans.get('file_types_images', 'Images'), '*.jpg *.jpeg *.png *.bmp *.gif *.webp'), (trans.get('file_types_videos', 'Videos'), '*.mp4 *.avi *.mov *.mkv'), (trans.get('file_types_all', 'All'), '*.*')]
+        file_path = filedialog.askopenfilename(title=trans.get('file_dialog_title', 'Select File'), filetypes=filetypes)
         if not file_path: return
-
         try:
             pil_image = self.get_pil_image_from_file(file_path)
             if pil_image:
@@ -224,47 +168,40 @@ class AnimalIdentifierApp:
                     first_prediction_label = predictions[0][1].replace('_', ' ').capitalize()
                     self.search_wikipedia(first_prediction_label)
             else: raise ValueError("Unsupported file format or unable to read file.")
-        except Exception as e:
-            messagebox.showerror(trans['error_message'], str(e))
-
+        except Exception as e: messagebox.showerror(trans.get('error_message', 'Error'), str(e))
     def predict(self, processed_image):
-        """使用已載入的模型進行預測"""
         if self.model:
             predictions = self.model.predict(processed_image, verbose=0)
             return tf.keras.applications.mobilenet_v2.decode_predictions(predictions, top=3)[0]
         return None
-
     def apply_theme(self):
-        """根據當前選擇的主題更新所有UI元件的顏色和風格"""
         mode = self.theme_mode.get(); colors = self.themes[mode]
         self.root.configure(bg=colors['BG'])
         self.main_frame.configure(bg=colors['BG']); self.top_frame.configure(bg=colors['BG'])
         self.results_frame.configure(bg=colors['BG']); self.search_frame.configure(bg=colors['BG'])
-        self.title_label.config(bg=colors['BG'], fg=colors['TEXT']); self.result_title_label.config(bg=colors['BG'], fg=colors['TEXT'])
-        self.upload_button.config(bg=colors['ACCENT'], fg=colors['BUTTON_TEXT'], activebackground=self.themes['dark' if mode == 'light' else 'light']['ACCENT'], activeforeground=colors['BUTTON_TEXT'])
-        self.search_button.config(bg=colors['SECONDARY_BG'], fg=colors['TEXT'], activebackground=colors['ACCENT'], activeforeground=colors['BUTTON_TEXT'])
-        self.search_entry.config(bg=colors['FRAME_BG'], fg=colors['TEXT'], insertbackground=colors['TEXT'], relief='flat')
+        self.title_label.config(bg=colors['BG'], fg=colors['TEXT'], font=self.get_font('title'))
+        self.result_title_label.config(bg=colors['BG'], fg=colors['TEXT'], font=self.get_font())
+        self.search_entry.config(bg=colors['FRAME_BG'], fg=colors['TEXT'], insertbackground=colors['TEXT'], relief='flat', font=self.get_font())
+        self.upload_button.config(bg=colors['ACCENT'], fg=colors['BUTTON_TEXT'], activebackground=self.themes['dark' if mode == 'light' else 'light']['ACCENT'], activeforeground=colors['BUTTON_TEXT'], font=self.get_font('button'))
+        self.search_button.config(bg=colors['SECONDARY_BG'], fg=colors['TEXT'], activebackground=colors['ACCENT'], activeforeground=colors['BUTTON_TEXT'], font=self.get_font('button'))
         self.image_canvas.delete("all"); self.image_canvas.create_rounded_rectangle(0, 0, 450, 350, radius=20, fill=colors['FRAME_BG'])
         if hasattr(self, 'photo'): self.image_canvas.create_image(225, 175, image=self.photo)
         style = ttk.Style(); style.configure("TCombobox", fieldbackground=colors['FRAME_BG'], background=colors['FRAME_BG'], foreground=colors['TEXT'], arrowcolor=colors['TEXT']); style.configure("Switch.TCheckbutton", background=colors['BG'])
         self.theme_switch.config(text="☀️" if mode == 'dark' else "🌙")
         for child in self.results_frame.winfo_children():
             if isinstance(child, tk.Button):
-                child.config(bg=colors['SECONDARY_BG'], fg=colors['TEXT'], activebackground=colors['ACCENT'], activeforeground=colors['BUTTON_TEXT'])
-
+                child.config(bg=colors['SECONDARY_BG'], fg=colors['TEXT'], activebackground=colors['ACCENT'], activeforeground=colors['BUTTON_TEXT'], font=self.get_font('prediction'))
     def toggle_theme(self): self.theme_mode.set('dark' if self.theme_mode.get() == 'light' else 'light'); self.apply_theme()
-    
     def update_ui_text(self):
-        lang = self.current_lang.get(); trans = self.translations[lang]
-        self.root.title(trans['window_title']); self.title_label.config(text=trans['main_title'])
-        if self.model is None: self.result_title_label.config(text=trans['loading_model'])
-        else: self.result_title_label.config(text=trans['result_placeholder'])
-        self.upload_button.config(text=trans['select_button']); self.search_button.config(text=trans['search_button'])
-    
+        lang = self.current_lang.get(); trans = self.translations.get(lang, {})
+        self.root.title(trans.get('window_title', 'Identifier'))
+        self.title_label.config(text=trans.get('main_title', 'Analysis'))
+        if self.model is None: self.result_title_label.config(text=trans.get('loading_model', 'Loading...'))
+        else: self.result_title_label.config(text=trans.get('result_placeholder', 'Results here'))
+        self.upload_button.config(text=trans.get('select_button', 'Select')); self.search_button.config(text=trans.get('search_button', 'Search'))
     def change_language(self, event=None):
-        self.update_ui_text()
+        self.apply_theme(); self.update_ui_text()
         if hasattr(self, 'last_prediction'): self.create_clickable_predictions(self.last_prediction)
-    
     def get_pil_image_from_file(self, file_path):
         file_ext = os.path.splitext(file_path)[1].lower()
         image_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp']; video_exts = ['.mp4', '.avi', '.mov', '.mkv']
@@ -273,17 +210,14 @@ class AnimalIdentifierApp:
             cap = cv2.VideoCapture(file_path); cap.set(cv2.CAP_PROP_POS_MSEC, 1000); success, frame = cap.read(); cap.release()
             if success: return Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         return None
-    
     def display_pil_image(self, pil_img):
         pil_img.thumbnail((430, 330)); rounded_img = round_corners(pil_img, 18); self.photo = ImageTk.PhotoImage(rounded_img); self.apply_theme()
 
-# --- 輔助函數：在 Canvas 上繪製圓角矩形 ---
 def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
     points = [x1+radius,y1, x1+radius,y1, x2-radius,y1, x2-radius,y1, x2,y1, x2,y1+radius, x2,y1+radius, x2,y2-radius, x2,y2-radius, x2,y2, x2-radius,y2, x2-radius,y2, x1+radius,y2, x1+radius,y2, x1,y2, x1,y2-radius, x1,y2-radius, x1,y1+radius, x1,y1+radius, x1,y1]
     return self.create_polygon(points, **kwargs, smooth=True)
 tk.Canvas.create_rounded_rectangle = create_rounded_rectangle
 
-# --- 啟動應用程式 ---
 if __name__ == "__main__":
     root = tk.Tk()
     app = AnimalIdentifierApp(root)

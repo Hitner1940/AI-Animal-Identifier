@@ -1,0 +1,19 @@
+{
+  "window_title": "동물 식별기",
+  "main_title": "이미지 또는 비디오 분석",
+  "result_placeholder": "예측 결과가 여기에 표시됩니다",
+  "select_button": "파일 선택",
+  "result_title": "AI 분석 결과 (클릭하여 검색):",
+  "prediction_prefix": "아마도:",
+  "confidence": "신뢰도",
+  "error_message": "오류가 발생했습니다:",
+  "file_dialog_title": "파일 선택",
+  "file_types_images": "이미지 파일",
+  "file_types_videos": "비디오 파일",
+  "file_types_all": "모든 지원 파일",
+  "loading_model": "모델 로딩 중, 잠시만 기다려 주세요...",
+  "search_button": "위키백과에서 검색",
+  "wiki_search_title": "위키백과 검색 결과",
+  "page_not_found": "일치하는 위키백과 페이지를 찾을 수 없습니다.",
+  "searching": "검색 중..."
+}

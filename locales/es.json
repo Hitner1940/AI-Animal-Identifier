@@ -1,0 +1,19 @@
+{
+  "window_title": "Identificador de Animales",
+  "main_title": "Análisis de Imagen o Video",
+  "result_placeholder": "El resultado de la predicción se mostrará aquí",
+  "select_button": "Seleccionar Archivo",
+  "result_title": "Análisis de IA (Haga clic para buscar):",
+  "prediction_prefix": "Podría ser:",
+  "confidence": "Confianza",
+  "error_message": "Ocurrió un error:",
+  "file_dialog_title": "Seleccionar un archivo",
+  "file_types_images": "Archivos de Imagen",
+  "file_types_videos": "Archivos de Video",
+  "file_types_all": "Todos los archivos compatibles",
+  "loading_model": "Cargando modelo, por favor espere...",
+  "search_button": "Buscar en Wikipedia",
+  "wiki_search_title": "Resultado de la Búsqueda de Wikipedia",
+  "page_not_found": "No se pudo encontrar una página de Wikipedia que coincida.",
+  "searching": "Buscando..."
+}
