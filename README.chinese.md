@@ -35,7 +35,8 @@
 
 ### 給一般使用者 (For Users - 推薦)
 
-1.  前往 [**Releases 頁面**](https://github.com/Your-Username/Your-Repo-Name/releases/latest)。
+1.  Go to the [**Releases Page**]([https://github.com/Hitner1940/AI-Animal-Identifier/tags).
+1.  前往 [**Releases 頁面**]()。
 2.  下載最新的 `FaunaLens.exe` 檔案。
 3.  直接執行，無需安裝。
 
