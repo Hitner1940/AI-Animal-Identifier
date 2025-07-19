@@ -78,8 +78,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-<br>
-
-<details>
-<summary><strong>點擊以展開中文版本 (Click to Expand Chinese Version)</strong></summary>
-
