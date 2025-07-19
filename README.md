@@ -46,6 +46,50 @@
 | **架構 (Arch.)** | Multi-threading, Modular (Single Responsibility)     |
 
 ### 專案結構 (Project Structure)
-
 專案的結構是為了可擴展性和可維護性而設計的，將不同的關注點分離到獨立的模組中。
+FaunaLens/
+│
+├── app.py              # 主應用程式邏輯、UI 和事件處理
+├── core.py             # 處理 AI 模型、預測和 API 呼叫
+├── utils.py            # 輔助函式 (例如：資源路徑、影像處理)
+│
+├── locales/            # 國際化 (i18n) 檔案
+│   ├── en.json
+│   └── ... (7+ 種語言)
+│
+├── README.md           # 你正在閱讀的檔案
+├── README.en.md        # 英文版 README
+├── requirements.txt    # 專案依賴
+└── LICENSE             # MIT 授權條款
+
+
+## 🚀 如何開始 (Getting Started)
+
+### 給一般使用者 (For Users - 推薦)
+
+1.  前往 [**Releases 頁面**](https://github.com/Your-Username/Your-Repo-Name/releases/latest)。
+2.  下載最新的 `FaunaLens.exe` 檔案。
+3.  直接執行，無需安裝。
+
+### 給開發者 (For Developers)
+
+1.  **Clone 倉庫：**
+    ```bash
+    git clone [https://github.com/Your-Username/Your-Repo-Name.git](https://github.com/Your-Username/Your-Repo-Name.git)
+    cd FaunaLens
+    ```
+2.  **安裝依賴套件：**
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **執行應用程式：**
+    ```bash
+    python app.py
+    ```
+
+## 📜 授權條款 (License)
+
+本專案採用 MIT 授權條款。詳情請見 [LICENSE](LICENSE) 檔案。
+
+---
 
