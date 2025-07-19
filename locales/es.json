@@ -3,6 +3,7 @@
   "main_title": "Análisis de Imagen o Video",
   "result_placeholder": "El resultado de la predicción se mostrará aquí",
   "select_button": "Seleccionar Archivo",
+  "clear_button": "Limpiar",
   "result_title": "Análisis de IA (Haga clic para buscar):",
   "prediction_prefix": "Podría ser:",
   "confidence": "Confianza",

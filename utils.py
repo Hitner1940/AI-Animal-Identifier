@@ -3,9 +3,13 @@ import os
 import sys
 from PIL import Image, ImageDraw
 
+# This file requires no changes from v1.2.1.
+# The resource_path function is still essential for finding the 'locales' folder.
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")

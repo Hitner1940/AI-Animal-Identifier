@@ -3,6 +3,7 @@
   "main_title": "画像または動画の分析",
   "result_placeholder": "予測結果はここに表示されます",
   "select_button": "ファイルを選択",
+  "clear_button": "クリア",
   "result_title": "AI分析結果 (クリックして検索):",
   "prediction_prefix": "可能性あり:",
   "confidence": "信頼度",

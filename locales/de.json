@@ -3,6 +3,7 @@
   "main_title": "Bild- oder Videoanalyse",
   "result_placeholder": "Das Vorhersageergebnis wird hier angezeigt",
   "select_button": "Datei auswählen",
+  "clear_button": "Löschen",
   "result_title": "KI-Analyse (Klicken zum Suchen):",
   "prediction_prefix": "Könnte sein:",
   "confidence": "Konfidenz",
