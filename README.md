@@ -1,79 +1,111 @@
-🐾 FaunaLens: AI Animal Identifier
-A smart, modern desktop application built with Python and TensorFlow to identify animals from images and videos. This project showcases a complete development cycle from concept to a feature-rich, user-friendly tool.
+FaunaLens v2.2 🐾
+Your AI-powered window to the animal kingdom.
+This isn't just another Python script. FaunaLens is a fully-featured, cross-platform desktop application built from the ground up to provide a seamless and intuitive experience for animal identification. It's a showcase of modern application architecture, thoughtful UI/UX design, and the power of machine learning.
 
-(Pro-tip: Record a short GIF of your app working and replace the link above. It makes your project look 10x more professional. You can use a tool like ScreenToGif.)
+Note: Create a short GIF of your app in action and replace the link above. This is the most important part of your README. Use a tool like ScreenToGif.
 
-✨ Core Features
-🧠 AI-Powered Identification: Leverages the pre-trained MobileNetV2 deep learning model for accurate and fast classification.
+✨ Key Features
+🧠 Intelligent Classification: Powered by the robust TensorFlow (Keras) MobileNetV2 model for fast and accurate predictions.
 
-📂 Multi-File Support: Analyze animals from a wide range of file types, including images (.jpg, .png, .webp) and videos (.mp4, .avi).
+🎨 True Apple HIG Design: The UI isn't just "inspired" by Apple; it's built on the core principles of the Human Interface Guidelines.
 
-🎨 Sleek, Modern UI: A beautiful, Apple-inspired user interface built from the ground up, featuring both a light and a dark mode for comfortable viewing.
+Semantic Colors: Red for destructive, Green for primary actions.
 
-🌐 Multi-Language Ready: Easily switch between English and Traditional Chinese on the fly.
+Hierarchical Layout: Layered backgrounds create depth and focus.
 
-⚡ High-Performance Loading: The UI launches instantly while the heavy AI model loads in the background, ensuring a smooth user experience without long startup waits.
+Light & Dark Modes: Fully adaptive themes for any environment.
 
-🛠️ Tech Stack
-Backend & Core Logic: Python
+🌍 Fully Internationalized (i18n): Supports 7 languages out of the box, with a scalable architecture that makes adding more a breeze. All translations are managed in external .json files.
 
-AI & Machine Learning: TensorFlow (Keras)
+⚡ Dynamic & Responsive UI:
 
-Video Processing: OpenCV
+The layout intelligently adapts after analysis, hiding the large image and showing a thumbnail to focus on the results.
 
-GUI Framework: Tkinter (with ttk for modern styling)
+Custom-built, fully-rounded widgets and interactive, hover-able result rows provide a premium feel.
 
-Image Handling: Pillow (PIL)
+🔗 Deep Wikipedia Integration: Go beyond identification. Instantly fetch and display summaries for any prediction with a single click, turning the app into a learning tool.
+
+🚀 High-Performance Architecture:
+
+The UI launches instantly while the heavy AI model loads in a separate thread.
+
+The codebase is professionally refactored into app.py (UI), core.py (Engine), and utils.py (Toolbox) for maximum maintainability.
+
+🛠️ Tech Stack & Architecture
+Category
+
+Technology / Principle
+
+Backend
+
+Python 3.11
+
+AI/ML
+
+TensorFlow (Keras)
+
+GUI
+
+Tkinter, ttk
+
+Imaging
+
+Pillow (PIL), OpenCV
+
+Packaging
+
+PyInstaller
+
+Design
+
+Apple Human Interface Guidelines, Semantic Coloring
+
+Arch.
+
+Multi-threading, Modular (Single Responsibility)
+
+Project Structure
+The project is structured for scalability and maintainability, separating concerns into distinct modules.
+
+FaunaLens/
+│
+├── app.py              # Main application logic, UI, and event handling
+├── core.py             # Handles AI model, predictions, and API calls
+├── utils.py            # Helper functions (e.g., resource paths, image manipulation)
+│
+├── locales/            # Internationalization (i18n) files
+│   ├── en.json
+│   └── ... (7+ languages)
+│
+├── README.md           # You are here
+├── requirements.txt    # Project dependencies
+└── LICENSE             # MIT License
+
 
 🚀 Getting Started
-There are two ways to get this application running.
+For Users (Recommended)
+Go to the Releases Page.
 
-1. For Everyone (Recommended)
-Simply download the latest AnimalIdentifier.exe file from the Releases Page. No installation needed. Just double-click and run.
+Download the latest FaunaLens.exe file.
 
-2. For Developers
-If you want to poke around the code or contribute, you'll need to run it from the source.
+Run it. No installation needed.
 
+For Developers
 Clone the repository:
 
-git clone https://github.com/[Your-Username]/[Your-Repo-Name].git
-cd [Your-Repo-Name]
+git clone https://github.com/Your-Username/Your-Repo-Name.git
+cd FaunaLens
 
-Set up a virtual environment (optional but recommended):
-
-python -m venv venv
-venv\Scripts\activate  # On Windows
 
 Install dependencies:
 
 pip install -r requirements.txt
 
+
 Run the application:
 
-python your_script_name.py
+python app.py
 
-(Remember to replace your_script_name.py with your actual file name)
 
-📖 How to Use
-Launch the application.
-
-Click the "Select File" button.
-
-Choose an image or video file containing an animal.
-
-The app will display the image/frame and provide the top 3 predictions from the AI model.
-
-Use the toggles in the top-right to switch between languages and themes.
-
-🔮 Future Improvements
-This project has a solid foundation, but here's where it could go next:
-
-[ ] Object Detection: Upgrade from classification to object detection (using YOLO or SSD) to draw bounding boxes around multiple animals in a single frame.
-
-[ ] Live Webcam Feed: Implement real-time identification using a live webcam stream.
-
-[ ] Wikipedia API Integration: Fetch and display a short summary of the identified animal from Wikipedia.
-
-[ ] Custom Model Training: Fine-tune the model on a specific dataset (e.g., bird species, dog breeds) for specialized, high-accuracy identification.
-
-This project was built as a learning exercise to cover the full lifecycle of a modern desktop AI application.
+📜 License
+This project is licensed under the MIT License. See the LICENSE file for details.
