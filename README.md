@@ -56,7 +56,8 @@ FaunaLens/ │ ...
 
 ### For Users (Recommended)
 
-1.  Go to the [**Releases Page**](https://github.com/Your-Username/Your-Repo-Name/releases/latest).
+1.  Go to the [**Releases Page**](https://github.com/Hitner1940/AI-Animal-Identifier/tags).
+1.  Go to the [**Releases Page**]([1.  Go to the [**Releases Page**]().
 2.  Download the latest `FaunaLens.exe` file.
 3.  Run it. No installation needed.
 
