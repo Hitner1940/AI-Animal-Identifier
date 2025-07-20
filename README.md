@@ -2,7 +2,7 @@
 <a href="README.chinese.md"><strong>Read in Chinnese</strong></a>
 </div>
 
-# FaunaLens v2.2 🐾
+# FaunaLens v1.2.2 🐾
 
 ### Your AI-powered window to the animal kingdom.
 
