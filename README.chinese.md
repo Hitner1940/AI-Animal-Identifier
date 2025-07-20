@@ -3,7 +3,7 @@
 <details>
 <summary><strong>點擊以展開中文版本 (Click to Expand Chinese Version)</strong></summary>
 
-# FaunaLens v2.2 🐾
+# FaunaLens v1.2.2 🐾
 
 ### 你的人工智慧動物王國之窗。
 
