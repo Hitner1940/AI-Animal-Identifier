@@ -1,85 +1,79 @@
-<div align="right">
-<a href="README.chinese.md"><strong>Read in Chinnese</strong></a>
-</div>
+🐾 FaunaLens: AI Animal Identifier
+A smart, modern desktop application built with Python and TensorFlow to identify animals from images and videos. This project showcases a complete development cycle from concept to a feature-rich, user-friendly tool.
 
-# FaunaLens v1.2.2 🐾
+(Pro-tip: Record a short GIF of your app working and replace the link above. It makes your project look 10x more professional. You can use a tool like ScreenToGif.)
 
-### Your AI-powered window to the animal kingdom.
+✨ Core Features
+🧠 AI-Powered Identification: Leverages the pre-trained MobileNetV2 deep learning model for accurate and fast classification.
 
-[![Python Version](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/github/v/release/Your-Username/Your-Repo-Name)](https://github.com/Your-Username/Your-Repo-Name/releases/latest)
+📂 Multi-File Support: Analyze animals from a wide range of file types, including images (.jpg, .png, .webp) and videos (.mp4, .avi).
 
-This isn't just another Python script. FaunaLens is a fully-featured, cross-platform desktop application built from the ground up to provide a seamless and intuitive experience for animal identification. It's a showcase of modern application architecture, thoughtful UI/UX design, and the power of machine learning.
+🎨 Sleek, Modern UI: A beautiful, Apple-inspired user interface built from the ground up, featuring both a light and a dark mode for comfortable viewing.
 
-![FaunaLens Demo GIF](https://i.imgur.com/your-demo-gif.gif)
-> **Note:** Create a short GIF of your app in action and replace the link above. This is the most important part of your README. Use a tool like [ScreenToGif](https://www.screentogif.com/).
+🌐 Multi-Language Ready: Easily switch between English and Traditional Chinese on the fly.
 
----
+⚡ High-Performance Loading: The UI launches instantly while the heavy AI model loads in the background, ensuring a smooth user experience without long startup waits.
 
-## ✨ Key Features
+🛠️ Tech Stack
+Backend & Core Logic: Python
 
-* **🧠 Intelligent Classification:** Powered by the robust **TensorFlow (Keras)** `MobileNetV2` model for fast and accurate predictions.
-* **🎨 True Apple HIG Design:** The UI isn't just "inspired" by Apple; it's built on the core principles of the Human Interface Guidelines.
-    * **Semantic Colors:** Red for destructive, Green for primary actions.
-    * **Hierarchical Layout:** Layered backgrounds create depth and focus.
-    * **Light & Dark Modes:** Fully adaptive themes for any environment.
-* **🌍 Fully Internationalized (i18n):** Supports 7 languages out of the box, with a scalable architecture that makes adding more a breeze. All translations are managed in external `.json` files.
-* **⚡ Dynamic & Responsive UI:**
-    * The layout intelligently **hides the large image and shows a thumbnail** after analysis to focus on the results.
-    * **Custom-built, fully-rounded buttons** and interactive, hover-able result rows provide a premium feel.
-* **🔗 Deep Wikipedia Integration:** Go beyond identification. Instantly fetch and display summaries for any prediction with a single click, turning the app into a learning tool.
-* **🚀 High-Performance Architecture:**
-    * The UI launches instantly while the heavy AI model loads in a separate thread.
-    * The codebase is professionally refactored into `app.py` (UI), `core.py` (Engine), and `utils.py` (Toolbox) for maximum maintainability.
+AI & Machine Learning: TensorFlow (Keras)
 
-## 🛠️ Tech Stack & Architecture
+Video Processing: OpenCV
 
-| Category      | Technology / Principle                               |
-| :------------ | :--------------------------------------------------- |
-| **Backend** | Python 3.11                                          |
-| **AI/ML** | TensorFlow (Keras)                                   |
-| **GUI** | Tkinter, `ttk`                                       |
-| **Imaging** | Pillow (PIL), OpenCV                                 |
-| **Packaging** | PyInstaller                                          |
-| **Design** | Apple Human Interface Guidelines, Semantic Coloring  |
-| **Arch.** | Multi-threading, Modular (Single Responsibility)     |
+GUI Framework: Tkinter (with ttk for modern styling)
 
-### Project Structure
+Image Handling: Pillow (PIL)
 
-The project is structured for scalability and maintainability, separating concerns into distinct modules.
+🚀 Getting Started
+There are two ways to get this application running.
 
-FaunaLens/ │ ...
+1. For Everyone (Recommended)
+Simply download the latest AnimalIdentifier.exe file from the Releases Page. No installation needed. Just double-click and run.
 
+2. For Developers
+If you want to poke around the code or contribute, you'll need to run it from the source.
 
-## 🚀 Getting Started
+Clone the repository:
 
-### For Users (Recommended)
+git clone https://github.com/[Your-Username]/[Your-Repo-Name].git
+cd [Your-Repo-Name]
 
-1.  Go to the [**Releases Page**](https://github.com/Hitner1940/AI-Animal-Identifier/tags).
-1.  Go to the [**Releases Page**]([1.  Go to the [**Releases Page**]().
-2.  Download the latest `FaunaLens.exe` file.
-3.  Run it. No installation needed.
+Set up a virtual environment (optional but recommended):
 
-### For Developers
+python -m venv venv
+venv\Scripts\activate  # On Windows
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/Your-Username/Your-Repo-Name.git](https://github.com/Your-Username/Your-Repo-Name.git)
-    cd FaunaLens
-    ```
-2.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  **Run the application:**
-    ```bash
-    python app.py
-    ```
+Install dependencies:
 
-## 📜 License
+pip install -r requirements.txt
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Run the application:
 
----
+python your_script_name.py
 
+(Remember to replace your_script_name.py with your actual file name)
+
+📖 How to Use
+Launch the application.
+
+Click the "Select File" button.
+
+Choose an image or video file containing an animal.
+
+The app will display the image/frame and provide the top 3 predictions from the AI model.
+
+Use the toggles in the top-right to switch between languages and themes.
+
+🔮 Future Improvements
+This project has a solid foundation, but here's where it could go next:
+
+[ ] Object Detection: Upgrade from classification to object detection (using YOLO or SSD) to draw bounding boxes around multiple animals in a single frame.
+
+[ ] Live Webcam Feed: Implement real-time identification using a live webcam stream.
+
+[ ] Wikipedia API Integration: Fetch and display a short summary of the identified animal from Wikipedia.
+
+[ ] Custom Model Training: Fine-tune the model on a specific dataset (e.g., bird species, dog breeds) for specialized, high-accuracy identification.
+
+This project was built as a learning exercise to cover the full lifecycle of a modern desktop AI application.
