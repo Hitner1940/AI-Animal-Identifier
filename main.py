@@ -3,11 +3,14 @@ import tkinter as tk
 from app import AnimalIdentifierApp
 
 # =================================================================================
-#  主執行入口 (Main Entry Point)
-#  這個檔案是整個應用程式的起點。
-#  它的唯一職責就是：建立主視窗，並啟動我們的 App 控制器。
+#  Main Entry Point
+#  This file is the starting point for the entire application.
+#  Its sole responsibility is to create the main window and start our App controller.
 # =================================================================================
 if __name__ == "__main__":
+    # Create the main window
     root = tk.Tk()
+    # Create and start the application
     app = AnimalIdentifierApp(root)
+    # Enter the main event loop
     root.mainloop()
