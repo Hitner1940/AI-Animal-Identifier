@@ -76,7 +76,7 @@ FaunaLens/
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/Your-Username/Your-Repo-Name.git](https://github.com/Your-Username/Your-Repo-Name.git)
+    git clone [https://github.com/Hitner1940/AI-Animal-Identifier.git]
     cd FaunaLens
     ```
 2.  **Install dependencies:**
