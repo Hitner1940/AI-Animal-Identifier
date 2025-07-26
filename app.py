@@ -6,18 +6,18 @@ import os
 import cv2
 import threading
 import json
-import tensorflow as tf
+# import tensorflow as tf # This is now imported lazily in core.py
 
 # --- Import functions from our modules ---
-import core
+# import core # This is now imported lazily
 import utils
 from view import MainUI
 from config import THEMES, FONT_MAP, FILE_TYPES_CONFIG
 
 # =================================================================================
-#  v2.8: The Controller
-#  Update: All comments have been translated to English for better readability
-#  and maintainability.
+#  v2.9: The Controller
+#  Update: Implemented lazy loading for the 'core' module to ensure the UI
+#  appears instantly, before heavy libraries are loaded.
 # =================================================================================
 class AnimalIdentifierApp:
     def __init__(self, root):
@@ -27,13 +27,13 @@ class AnimalIdentifierApp:
 
         # --- Application State ---
         self.theme_mode = tk.StringVar(value='light')
-        # Set default language, fallback to 'en' if 'zh-tw' is not available
         default_lang = 'zh-tw' if 'zh-tw' in self.translations else 'en'
         self.current_lang = tk.StringVar(value=default_lang)
         self.last_prediction = None
         self.themes = THEMES
         self.font_map = FONT_MAP
         self.label_list = []
+        self.model_loaded = False # New flag to track model status
 
         # --- Create UI instance ---
         self.ui = MainUI(root, self)
@@ -63,18 +63,15 @@ class AnimalIdentifierApp:
             lang_file_path = utils.resource_path('languages.json')
             with open(lang_file_path, 'r', encoding='utf-8') as f:
                 self.translations = json.load(f)
-        except FileNotFoundError:
-            messagebox.showerror("Fatal Error", "Could not find 'languages.json'. The application might not display text correctly.")
-            # Provide minimal fallback translations to avoid a crash
-            self.translations = {'en': {'window_title': 'Identifier'}}
         except Exception as e:
-            messagebox.showerror("Fatal Error", f"An error occurred while loading language file: {e}")
+            messagebox.showerror("Fatal Error", f"Could not find or read 'languages.json': {e}")
             self.translations = {'en': {'window_title': 'Identifier'}}
 
     def load_model_and_labels_thread(self):
         """Loads the TensorFlow model and ImageNet labels in a background thread."""
-        model_loaded = core.load_classification_model()
-        if model_loaded:
+        import core # Lazy import
+        self.model_loaded = core.load_classification_model()
+        if self.model_loaded:
             self.label_list = core.get_all_imagenet_labels()
             self.root.after(0, self.on_model_loaded)
         else:
@@ -102,7 +99,6 @@ class AnimalIdentifierApp:
         lang = self.current_lang.get()
         trans = self.translations.get(lang, {})
         
-        # Build file types from config
         filetypes = [
             (trans.get('file_types_images', 'Images'), ' '.join(FILE_TYPES_CONFIG['images'])),
             (trans.get('file_types_videos', 'Videos'), ' '.join(FILE_TYPES_CONFIG['videos'])),
@@ -114,12 +110,11 @@ class AnimalIdentifierApp:
             return
             
         try:
-            self.ui.show_loading_view() # Show loading screen
+            self.ui.show_loading_view()
             pil_image = self.get_pil_image_from_file(file_path)
             if pil_image:
                 threading.Thread(target=self.run_prediction_thread, args=(pil_image,), daemon=True).start()
             else:
-                # Raise a more detailed error for debugging
                 file_ext = os.path.splitext(file_path)[1].lower()
                 raise ValueError(f"Unsupported file format or unable to read file: {file_ext}")
         except Exception as e:
@@ -128,9 +123,9 @@ class AnimalIdentifierApp:
 
     def run_prediction_thread(self, pil_image):
         """Runs image preprocessing and model prediction in a background thread."""
+        import core # Lazy import
         processed_image = core.preprocess_image(pil_image)
         predictions = core.predict_classification(processed_image)
-        # Update UI on the main thread
         if predictions is not None:
             self.root.after(0, self.display_prediction_results, pil_image, predictions)
 
@@ -138,7 +133,6 @@ class AnimalIdentifierApp:
         """Displays the prediction results."""
         self.last_prediction = predictions
         self.ui.show_results_view(pil_image, predictions)
-        # Automatically search Wikipedia for the top result
         first_prediction_label = predictions[0][1].replace('_', ' ').capitalize()
         self.search_wikipedia(first_prediction_label)
 
@@ -159,6 +153,7 @@ class AnimalIdentifierApp:
 
     def fetch_wiki_summary_thread(self, query):
         """Fetches the Wikipedia summary in a background thread."""
+        import core # Lazy import
         lang_code = self.current_lang.get().split('-')[0]
         title, summary = core.fetch_wikipedia_summary(query, lang_code)
         lang = self.current_lang.get()
@@ -180,7 +175,7 @@ class AnimalIdentifierApp:
         self.root.title(trans.get('window_title', 'Identifier'))
         self.ui.title_label.config(text=trans.get('main_title', 'Analysis'))
         
-        if core.classification_model is None:
+        if not self.model_loaded:
             self.ui.result_title_label.config(text=trans.get('loading_model', 'Loading...'))
         elif self.last_prediction is None:
             self.ui.result_title_label.config(text=trans.get('result_placeholder', 'Results will appear here'))
@@ -200,7 +195,6 @@ class AnimalIdentifierApp:
         """Reads an image or video frame from a file path and returns a PIL Image object."""
         file_ext = os.path.splitext(file_path)[1].lower()
         
-        # Fix: Generate a list of correct extensions (e.g., '.jpg') from the config patterns (e.g., '*.jpg')
         image_exts = [ext.replace('*', '') for ext in FILE_TYPES_CONFIG['images']]
         video_exts = [ext.replace('*', '') for ext in FILE_TYPES_CONFIG['videos']]
 
@@ -208,7 +202,6 @@ class AnimalIdentifierApp:
             return Image.open(file_path).convert('RGB')
         elif file_ext in video_exts:
             cap = cv2.VideoCapture(file_path)
-            # Read a frame from the 1-second mark of the video
             cap.set(cv2.CAP_PROP_POS_MSEC, 1000)
             success, frame = cap.read()
             cap.release()
