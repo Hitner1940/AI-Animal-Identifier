@@ -1,7 +1,7 @@
 <div align="right">
 <a href="README.chinese.md"><strong>Read in Chinese</strong></a>
 </div>
-\<br\>
+<br\>
 
 # FaunaLens 🐾
 
