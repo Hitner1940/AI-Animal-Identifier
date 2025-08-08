@@ -7,6 +7,7 @@
 [](https://www.google.com/search?q=https://github.com/Hitner1940/AI-Animal-Identifier/releases/latest)
 
 FaunaLens 是一款功能齊全、跨平台的桌面應用程式，旨在為動物識別提供無縫且直觀的體驗。它不僅是一個腳本，更是一個展示現代化應用程式架構、精良 UI/UX 設計以及機器學習力量的完整專案。
+
 -----
 
 ## ✨ 核心功能 (Key Features)
