@@ -1,0 +1,58 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+*.whl
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test & coverage caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# IDE/editor
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.code-workspace
+
+# OS files (Windows/macOS)
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Jupyter (if any)
+.ipynb_checkpoints/
+
+# Optional local data/models (uncomment if you keep large files locally)
+# data/
+# datasets/
+# models/
+
