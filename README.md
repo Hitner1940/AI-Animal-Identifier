@@ -1,11 +1,6 @@
 <div align="right">
 <a href="README.chinese.md"><strong>Read in Chinese</strong></a>
 </div>
-
-Of course. Here is a professionally formatted README in Markdown, based on the files and information you've provided.
-
-It's structured to be clean, informative, and to properly showcase the technical strengths of your application.
-
 \<br\>
 
 # FaunaLens 🐾
